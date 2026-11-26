@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: splitter
+  config:
+    # Local secrets live in a git-ignored .env file; real environments set env vars instead.
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/splitter}
+    username: ${DB_USER:splitter}
+    password: ${DB_PASSWORD:splitter}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate # Flyway owns the schema
+  flyway:
+    enabled: true
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+  mvc:
+    problemdetails:
+      enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
