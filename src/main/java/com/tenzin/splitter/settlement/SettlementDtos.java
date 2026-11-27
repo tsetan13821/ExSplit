@@ -16,6 +16,11 @@ public final class SettlementDtos {
 	public record MemberBalance(Long userId, String name, long netPaise) {
 	}
 
+	/** One suggested payment, with names so a client can show "B pays you ₹900". */
+	public record SuggestedTransfer(Long fromUserId, String fromName, Long toUserId, String toName,
+			long amountPaise) {
+	}
+
 	/** The payer is always the caller, taken from the token, never from the body. */
 	public record RecordSettlementRequest(@NotNull Long toUserId, @NotNull @Positive Long amountPaise) {
 	}

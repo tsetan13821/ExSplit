@@ -53,6 +53,7 @@ class GroupAccessTest extends ApiTestSupport {
 						 "splitType": "EQUAL", "participantIds": [{owner}, {member}]}
 						"""),
 				new Endpoint(HttpMethod.GET, "/api/groups/{g}/balances"),
+				new Endpoint(HttpMethod.GET, "/api/groups/{g}/settlements/suggested"),
 				new Endpoint(HttpMethod.POST, "/api/groups/{g}/settlements", """
 						{"toUserId": {other}, "amountPaise": 100}
 						"""));

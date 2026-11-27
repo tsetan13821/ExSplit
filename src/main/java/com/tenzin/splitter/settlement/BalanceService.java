@@ -10,6 +10,7 @@ import com.tenzin.splitter.expense.ExpenseRepository;
 import com.tenzin.splitter.group.GroupMember;
 import com.tenzin.splitter.group.GroupMemberRepository;
 import com.tenzin.splitter.settlement.SettlementDtos.MemberBalance;
+import com.tenzin.splitter.settlement.SettlementDtos.SuggestedTransfer;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,14 +60,30 @@ public class BalanceService {
 
 	@Transactional(readOnly = true)
 	public List<MemberBalance> balances(long groupId) {
-		Map<Long, String> names = new HashMap<>();
-		for (GroupMember member : members.findMembersWithUsers(groupId)) {
-			names.put(member.getId().userId(), member.getUser().getName());
-		}
+		Map<Long, String> names = memberNames(groupId);
 		return netByUser(groupId).entrySet()
 			.stream()
 			.map(e -> new MemberBalance(e.getKey(), names.get(e.getKey()), e.getValue()))
 			.toList();
+	}
+
+	/** The fewest payments (greedy, at most n - 1) that bring every balance to zero. */
+	@Transactional(readOnly = true)
+	public List<SuggestedTransfer> suggestedSettlements(long groupId) {
+		Map<Long, String> names = memberNames(groupId);
+		return DebtSimplifier.simplify(netByUser(groupId))
+			.stream()
+			.map(t -> new SuggestedTransfer(t.fromUserId(), names.get(t.fromUserId()), t.toUserId(),
+					names.get(t.toUserId()), t.amountPaise()))
+			.toList();
+	}
+
+	private Map<Long, String> memberNames(long groupId) {
+		Map<Long, String> names = new HashMap<>();
+		for (GroupMember member : members.findMembersWithUsers(groupId)) {
+			names.put(member.getId().userId(), member.getUser().getName());
+		}
+		return names;
 	}
 
 	private static void add(Map<Long, Long> net, List<UserAmount> amounts, int sign) {

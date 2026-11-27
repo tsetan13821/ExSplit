@@ -6,6 +6,7 @@ import com.tenzin.splitter.security.AuthUser;
 import com.tenzin.splitter.settlement.SettlementDtos.MemberBalance;
 import com.tenzin.splitter.settlement.SettlementDtos.RecordSettlementRequest;
 import com.tenzin.splitter.settlement.SettlementDtos.SettlementResponse;
+import com.tenzin.splitter.settlement.SettlementDtos.SuggestedTransfer;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,13 @@ public class SettlementController {
 	@PreAuthorize("@groupSecurity.isMember(#groupId)")
 	public List<MemberBalance> balances(@PathVariable Long groupId) {
 		return balanceService.balances(groupId);
+	}
+
+	/** Suggested "who pays whom" to settle the whole group. Nothing is recorded. */
+	@GetMapping("/settlements/suggested")
+	@PreAuthorize("@groupSecurity.isMember(#groupId)")
+	public List<SuggestedTransfer> suggested(@PathVariable Long groupId) {
+		return balanceService.suggestedSettlements(groupId);
 	}
 
 	@PostMapping("/settlements")
