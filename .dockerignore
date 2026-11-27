@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.vscode
+target
+*.iml
+.env
+HELP.md
+README.md
+compose.yaml
+render.yaml
+Dockerfile

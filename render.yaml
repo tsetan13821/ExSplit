@@ -1,0 +1,39 @@
+# Render Blueprint: New > Blueprint, pick this repo. Secrets marked sync: false are
+# entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: exsplit
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # Neon: jdbc:postgresql://<host>/<database>?sslmode=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Base64 of at least 32 random bytes: openssl rand -base64 32
+      - key: JWT_SECRET
+        sync: false
+      # Gmail SMTP with an app password, for password-reset emails
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+        value: "true"
+      - key: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+        value: "true"
+      # The service's public URL, e.g. https://exsplit.onrender.com
+      - key: APP_BASE_URL
+        sync: false
