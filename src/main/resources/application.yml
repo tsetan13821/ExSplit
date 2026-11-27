@@ -31,3 +31,5 @@ app:
     refresh-token-ttl: 7d
     max-failed-attempts: 5
     lockout-duration: 15m
+  groups:
+    invite-ttl: 48h
