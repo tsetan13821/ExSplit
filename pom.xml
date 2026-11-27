@@ -11,8 +11,8 @@
 	<groupId>com.tenzin</groupId>
 	<artifactId>splitter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>ExSplit</name>
+	<description>Expense splitter REST backend: JWT auth with rotating refresh tokens, group-level authorization and debt simplification</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -32,6 +32,10 @@
 		<springdoc.version>3.1.1</springdoc.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

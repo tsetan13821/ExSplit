@@ -1,3 +1,7 @@
+server:
+  # Render (and most PaaS) tell the app which port to listen on.
+  port: ${PORT:8080}
+
 spring:
   application:
     name: splitter
@@ -25,6 +29,22 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    # Mail is optional (only password reset uses it); an unreachable SMTP server must
+    # not mark the app DOWN and get it restarted by the platform.
+    mail:
+      enabled: false
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha
 
 app:
   jwt:
