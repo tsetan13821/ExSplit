@@ -12,6 +12,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate # Flyway owns the schema
+    properties:
+      # Loads lazy collections (e.g. expense shares on a page of expenses) in batches, avoiding N+1.
+      hibernate.default_batch_fetch_size: 50
   flyway:
     enabled: true
   mail:

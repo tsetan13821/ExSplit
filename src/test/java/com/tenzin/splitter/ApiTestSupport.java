@@ -98,6 +98,11 @@ public abstract class ApiTestSupport {
 		return value.longValue();
 	}
 
+	/** The user id behind an access token. */
+	protected long userId(String token) throws Exception {
+		return jsonLong(getAs(token, "/api/users/me").andExpect(status().isOk()), "$.id");
+	}
+
 	/** Creates a group owned by the token's user and returns its id. */
 	protected long createGroup(String ownerToken, String name) throws Exception {
 		return jsonLong(postAs(ownerToken, "/api/groups", """

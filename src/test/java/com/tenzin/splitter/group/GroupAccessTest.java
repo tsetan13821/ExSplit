@@ -26,7 +26,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 @IntegrationTest
 class GroupAccessTest extends ApiTestSupport {
 
-	/** {@code {g}} is replaced with the group id. Bodies are valid so only authorization can fail. */
+	/**
+	 * Placeholders: {g} group id, {owner} and {member} user ids, {other} the group member who
+	 * is not the caller, {expense} an expense created by the owner. Bodies are valid for an
+	 * authorised caller, so the only thing that can fail is authorization.
+	 */
 	record Endpoint(HttpMethod method, String path, String body) {
 
 		Endpoint(HttpMethod method, String path) {
@@ -42,12 +46,23 @@ class GroupAccessTest extends ApiTestSupport {
 
 	static Stream<Endpoint> memberEndpoints() {
 		return Stream.of(
-				new Endpoint(HttpMethod.GET, "/api/groups/{g}"));
+				new Endpoint(HttpMethod.GET, "/api/groups/{g}"),
+				new Endpoint(HttpMethod.GET, "/api/groups/{g}/expenses"),
+				new Endpoint(HttpMethod.POST, "/api/groups/{g}/expenses", """
+						{"description": "Dinner", "amountPaise": 1000, "paidBy": {owner},
+						 "splitType": "EQUAL", "participantIds": [{owner}, {member}]}
+						"""),
+				new Endpoint(HttpMethod.GET, "/api/groups/{g}/balances"),
+				new Endpoint(HttpMethod.POST, "/api/groups/{g}/settlements", """
+						{"toUserId": {other}, "amountPaise": 100}
+						"""));
 	}
 
+	/** Owner-only, or (for the delete) owner-only here because the owner created that expense. */
 	static Stream<Endpoint> ownerEndpoints() {
 		return Stream.of(
-				new Endpoint(HttpMethod.POST, "/api/groups/{g}/invites"));
+				new Endpoint(HttpMethod.POST, "/api/groups/{g}/invites"),
+				new Endpoint(HttpMethod.DELETE, "/api/groups/{g}/expenses/{expense}"));
 	}
 
 	static Stream<Endpoint> allGroupEndpoints() {
@@ -62,6 +77,12 @@ class GroupAccessTest extends ApiTestSupport {
 
 	private long groupId;
 
+	private long ownerId;
+
+	private long memberId;
+
+	private long expenseId;
+
 	@BeforeEach
 	void setUpGroup() throws Exception {
 		ownerToken = registerAndLogin(uniqueEmail());
@@ -69,16 +90,30 @@ class GroupAccessTest extends ApiTestSupport {
 		outsiderToken = registerAndLogin(uniqueEmail());
 		groupId = createGroup(ownerToken, "Goa trip");
 		addMember(ownerToken, groupId, memberToken);
+		ownerId = userId(ownerToken);
+		memberId = userId(memberToken);
+		expenseId = jsonLong(postAs(ownerToken, "/api/groups/" + groupId + "/expenses", """
+				{"description": "Taxi", "amountPaise": 500, "paidBy": %d, "splitType": "EQUAL",
+				 "participantIds": [%d]}
+				""".formatted(ownerId, ownerId)), "$.id");
+	}
+
+	private String fill(String template, long group, String token) {
+		long other = ownerToken.equals(token) ? memberId : ownerId;
+		return template.replace("{g}", Long.toString(group))
+			.replace("{owner}", Long.toString(ownerId))
+			.replace("{member}", Long.toString(memberId))
+			.replace("{other}", Long.toString(other))
+			.replace("{expense}", Long.toString(expenseId));
 	}
 
 	private ResultActions call(Endpoint endpoint, long group, String token) throws Exception {
-		MockHttpServletRequestBuilder builder = request(endpoint.method(),
-				endpoint.path().replace("{g}", Long.toString(group)));
+		MockHttpServletRequestBuilder builder = request(endpoint.method(), fill(endpoint.path(), group, token));
 		if (token != null) {
 			builder.header(HttpHeaders.AUTHORIZATION, bearer(token));
 		}
 		if (endpoint.body() != null) {
-			builder.contentType(MediaType.APPLICATION_JSON).content(endpoint.body());
+			builder.contentType(MediaType.APPLICATION_JSON).content(fill(endpoint.body(), group, token));
 		}
 		return mvc.perform(builder);
 	}
