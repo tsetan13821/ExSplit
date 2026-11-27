@@ -24,6 +24,9 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, GroupM
 			""")
 	List<GroupMember> findMembersWithUsers(Long groupId);
 
+	@Query("select m.id.userId from GroupMember m where m.id.groupId = :groupId order by m.id.userId")
+	List<Long> findUserIds(Long groupId);
+
 	/** How many of {@code userIds} belong to the group, for checking a whole list at once. */
 	@Query("select count(m) from GroupMember m where m.id.groupId = :groupId and m.id.userId in :userIds")
 	long countMembersAmong(Long groupId, Collection<Long> userIds);

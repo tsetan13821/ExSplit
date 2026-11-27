@@ -28,7 +28,7 @@ class GroupAccessTest extends ApiTestSupport {
 
 	/**
 	 * Placeholders: {g} group id, {owner} and {member} user ids, {other} the group member who
-	 * is not the caller, {expense} an expense created by the owner. Bodies are valid for an
+	 * is not the caller, {expense} an expense and {recurring} a recurring expense created by the owner. Bodies are valid for an
 	 * authorised caller, so the only thing that can fail is authorization.
 	 */
 	record Endpoint(HttpMethod method, String path, String body) {
@@ -56,6 +56,10 @@ class GroupAccessTest extends ApiTestSupport {
 				new Endpoint(HttpMethod.GET, "/api/groups/{g}/settlements/suggested"),
 				new Endpoint(HttpMethod.POST, "/api/groups/{g}/settlements", """
 						{"toUserId": {other}, "amountPaise": 100}
+						"""),
+				new Endpoint(HttpMethod.GET, "/api/groups/{g}/recurring-expenses"),
+				new Endpoint(HttpMethod.POST, "/api/groups/{g}/recurring-expenses", """
+						{"description": "Rent", "amountPaise": 1000, "paidBy": {owner}, "dayOfMonth": 15}
 						"""));
 	}
 
@@ -63,7 +67,8 @@ class GroupAccessTest extends ApiTestSupport {
 	static Stream<Endpoint> ownerEndpoints() {
 		return Stream.of(
 				new Endpoint(HttpMethod.POST, "/api/groups/{g}/invites"),
-				new Endpoint(HttpMethod.DELETE, "/api/groups/{g}/expenses/{expense}"));
+				new Endpoint(HttpMethod.DELETE, "/api/groups/{g}/expenses/{expense}"),
+				new Endpoint(HttpMethod.DELETE, "/api/groups/{g}/recurring-expenses/{recurring}"));
 	}
 
 	static Stream<Endpoint> allGroupEndpoints() {
@@ -84,6 +89,8 @@ class GroupAccessTest extends ApiTestSupport {
 
 	private long expenseId;
 
+	private long recurringId;
+
 	@BeforeEach
 	void setUpGroup() throws Exception {
 		ownerToken = registerAndLogin(uniqueEmail());
@@ -97,6 +104,9 @@ class GroupAccessTest extends ApiTestSupport {
 				{"description": "Taxi", "amountPaise": 500, "paidBy": %d, "splitType": "EQUAL",
 				 "participantIds": [%d]}
 				""".formatted(ownerId, ownerId)), "$.id");
+		recurringId = jsonLong(postAs(ownerToken, "/api/groups/" + groupId + "/recurring-expenses", """
+				{"description": "Wifi", "amountPaise": 900, "paidBy": %d, "dayOfMonth": 1}
+				""".formatted(ownerId)), "$.id");
 	}
 
 	private String fill(String template, long group, String token) {
@@ -105,7 +115,8 @@ class GroupAccessTest extends ApiTestSupport {
 			.replace("{owner}", Long.toString(ownerId))
 			.replace("{member}", Long.toString(memberId))
 			.replace("{other}", Long.toString(other))
-			.replace("{expense}", Long.toString(expenseId));
+			.replace("{expense}", Long.toString(expenseId))
+			.replace("{recurring}", Long.toString(recurringId));
 	}
 
 	private ResultActions call(Endpoint endpoint, long group, String token) throws Exception {

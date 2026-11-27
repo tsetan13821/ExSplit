@@ -20,6 +20,11 @@ public class MutableClock extends Clock {
 		offset.updateAndGet(current -> current.plus(amount));
 	}
 
+	/** Jumps to a given moment; time keeps ticking from there. */
+	public void travelTo(Instant target) {
+		offset.set(Duration.between(Instant.now(), target));
+	}
+
 	public void reset() {
 		offset.set(Duration.ZERO);
 	}

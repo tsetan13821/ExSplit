@@ -1,5 +1,7 @@
 package com.tenzin.splitter.auth;
 
+import com.tenzin.splitter.auth.PasswordResetDtos.ResetConfirmRequest;
+import com.tenzin.splitter.auth.PasswordResetDtos.ResetRequest;
 import com.tenzin.splitter.user.UserResponse;
 import jakarta.validation.Valid;
 
@@ -16,8 +18,11 @@ public class AuthController {
 
 	private final AuthService authService;
 
-	public AuthController(AuthService authService) {
+	private final PasswordResetService passwordResetService;
+
+	public AuthController(AuthService authService, PasswordResetService passwordResetService) {
 		this.authService = authService;
+		this.passwordResetService = passwordResetService;
 	}
 
 	@PostMapping("/register")
@@ -42,6 +47,19 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void logout(@Valid @RequestBody RefreshTokenRequest request) {
 		authService.logout(request.refreshToken());
+	}
+
+	/** Always 202, whether or not the email has an account. */
+	@PostMapping("/password-reset/request")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void requestPasswordReset(@Valid @RequestBody ResetRequest request) {
+		passwordResetService.requestReset(request.email());
+	}
+
+	@PostMapping("/password-reset/confirm")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void confirmPasswordReset(@Valid @RequestBody ResetConfirmRequest request) {
+		passwordResetService.confirmReset(request.token(), request.newPassword());
 	}
 
 }

@@ -9,10 +9,12 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param refreshTokenTtl   lifetime of a refresh token
  * @param maxFailedAttempts wrong passwords in a row before the account locks
  * @param lockoutDuration   how long a locked account stays locked
+ * @param passwordResetTtl  how long a password-reset link stays valid
  */
 @ConfigurationProperties("app.auth")
 public record AuthProperties(
 		@DefaultValue("7d") Duration refreshTokenTtl,
 		@DefaultValue("5") int maxFailedAttempts,
-		@DefaultValue("15m") Duration lockoutDuration) {
+		@DefaultValue("15m") Duration lockoutDuration,
+		@DefaultValue("30m") Duration passwordResetTtl) {
 }
