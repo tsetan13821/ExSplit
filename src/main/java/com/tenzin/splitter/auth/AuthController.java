@@ -31,4 +31,17 @@ public class AuthController {
 		return authService.login(request);
 	}
 
+	/** Rotates the refresh token: returns a new pair and revokes the one sent. */
+	@PostMapping("/refresh")
+	public TokenResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+		return authService.refresh(request.refreshToken());
+	}
+
+	/** Revokes the token's whole family. The access token dies on its own within 15 minutes. */
+	@PostMapping("/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void logout(@Valid @RequestBody RefreshTokenRequest request) {
+		authService.logout(request.refreshToken());
+	}
+
 }

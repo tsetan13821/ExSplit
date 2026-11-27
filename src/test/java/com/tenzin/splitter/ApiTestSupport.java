@@ -43,6 +43,23 @@ public abstract class ApiTestSupport {
 				""".formatted(email, password));
 	}
 
+	protected ResultActions refresh(String refreshToken) throws Exception {
+		return postJson("/api/auth/refresh", """
+				{"refreshToken": "%s"}
+				""".formatted(refreshToken));
+	}
+
+	protected ResultActions logout(String refreshToken) throws Exception {
+		return postJson("/api/auth/logout", """
+				{"refreshToken": "%s"}
+				""".formatted(refreshToken));
+	}
+
+	/** Reads a string field from a JSON response. */
+	protected static String json(ResultActions result, String path) throws Exception {
+		return JsonPath.read(result.andReturn().getResponse().getContentAsString(), path);
+	}
+
 	/** Registers a fresh user and returns a valid access token for them. */
 	protected String registerAndLogin(String email) throws Exception {
 		register(email, "Test User", PASSWORD).andExpect(status().isCreated());
