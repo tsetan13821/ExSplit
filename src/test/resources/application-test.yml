@@ -1,0 +1,4 @@
+app:
+  jwt:
+    # Test-only key (Base64 of 32 bytes). Real keys come from the JWT_SECRET env var.
+    secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQtMzItYnl0ZXMtISE=
